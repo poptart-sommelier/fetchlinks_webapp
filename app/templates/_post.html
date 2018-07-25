@@ -1,0 +1,18 @@
+<p>
+    <b>Twitter Name: </b>{{ post.screen_name }}<br>
+    <b>Full Name: </b>{{ post.user }}<br>
+    <!-- add if condition here. if full urls, don't show short -->
+    <!-- code should return list of short/unshort pairs -->
+    <!-- then check if each pair has an unshort url, and display it if it does -->
+    <!-- <b>Urls: </b>{{ post.urls }}<br> -->
+    <!-- <b>Urls: </b>{{ post.unshort_urls }}<br> -->
+    <b>Full Text: </b>{{ post.full_text }}<br>
+    {% set url_list = post.unshort_urls.split('|') %}
+    {% for url in url_list %}
+    <b>Urls: </b><a href="{{ url }}">{{ url }}</a><br>
+    {% endfor %}
+    <b>Direct Link: </b><a href="{{ post.tweet_direct_link }}">{{ post.tweet_direct_link }}</a><br>
+    <!-- <b>Id: </b>{{ post.id }}<br> -->
+    <b>Tweet Type: </b>{{ post.tweet_type }}<br>
+</br>
+<hr>
