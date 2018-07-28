@@ -7,16 +7,19 @@ from app.models import Tweets
 @app.route('/')
 @app.route('/index')
 def index():
-	posts = Tweets.query.all()
-	return render_template('index.html', title='Home', posts=posts)
+	page = request.args.get('page', 1, type=int)
+	posts = Tweets.query.order_by(Tweets.id.desc()).paginate(
+		page, app.config['POSTS_PER_PAGE'], False)
+	next_url = url_for('index', page=posts.next_num) if posts.has_next else None
+	prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
+	return render_template('index.html', title='Home', posts=posts.items, next_url=next_url, prev_url=prev_url)
 
-
-# @app.route('/user/<username>')
-# def user(username):
-# 	user = Users.query.filter_by(username=username).first_or_404()
-# 	posts = [
-# 		{'author': user, 'body': 'Test Post #1'},
-# 		{'author': user, 'body': 'Test Post #2'}
-# 	]
-# 	return render_template('user.html', user=user, posts=posts)
+@app.route('/user/<screen_name>')
+def user(screen_name):
+	page = request.args.get('page', 1, type=int)
+	posts = Tweets.query.order_by(Tweets.id.desc()).filter_by(screen_name=screen_name).paginate(
+		page, app.config['POSTS_PER_PAGE'], False)
+	next_url = url_for('user', page=posts.next_num) if posts.has_next else None
+	prev_url = url_for('user', page=posts.prev_num) if posts.has_prev else None
+	return render_template('user.html', title='User Posts', screen_name=screen_name, posts=posts.items, next_url=next_url, prev_url=prev_url)
 

@@ -1,5 +1,5 @@
 <p>
-    <b>Twitter Name: </b>{{ post.screen_name }}<br>
+    <b>Twitter Name: </b><a href="/user/{{ post.screen_name }}">{{ post.screen_name }}</a><br>
     <b>Full Name: </b>{{ post.user }}<br>
     <!-- add if condition here. if full urls, don't show short -->
     <!-- code should return list of short/unshort pairs -->
@@ -11,8 +11,8 @@
     {% for url in url_list %}
     <b>Urls: </b><a href="{{ url }}">{{ url }}</a><br>
     {% endfor %}
-    <b>Direct Link: </b><a href="{{ post.tweet_direct_link }}">{{ post.tweet_direct_link }}</a><br>
     <!-- <b>Id: </b>{{ post.id }}<br> -->
     <b>Tweet Type: </b>{{ post.tweet_type }}<br>
-</br>
+    <b>Direct Link: </b><a href="{{ post.tweet_direct_link }}">{{ post.tweet_direct_link }}</a><br>
+</p>
 <hr>
