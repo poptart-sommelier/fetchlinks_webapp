@@ -11,6 +11,7 @@ class Tweets(db.Model):
 	screen_name = db.Column(db.String(100))
 	unshort_urls = db.Column(db.String(2000))
 	tweet_type = db.Column(db.String(50))
+	date_created = db.Column(db.String(100))
 
 	def __repr__(self):
 		return '<Tweets {}>'.format(self.body)

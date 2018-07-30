@@ -11,6 +11,7 @@
     {% for url in url_list %}
     <b>Urls: </b><a href="{{ url }}">{{ url }}</a><br>
     {% endfor %}
+    <b>Date Created: </b> {{ post.date_created }}<br>
     <!-- <b>Id: </b>{{ post.id }}<br> -->
     <b>Tweet Type: </b>{{ post.tweet_type }}<br>
     <b>Direct Link: </b><a href="{{ post.tweet_direct_link }}">{{ post.tweet_direct_link }}</a><br>
