@@ -1,19 +1,25 @@
 <p>
-    <b>Twitter Name: </b><a href="/user/{{ post.screen_name }}">{{ post.screen_name }}</a><br>
-    <b>Full Name: </b>{{ post.user }}<br>
-    <!-- add if condition here. if full urls, don't show short -->
-    <!-- code should return list of short/unshort pairs -->
-    <!-- then check if each pair has an unshort url, and display it if it does -->
-    <!-- <b>Urls: </b>{{ post.urls }}<br> -->
-    <!-- <b>Urls: </b>{{ post.unshort_urls }}<br> -->
-    <b>Full Text: </b>{{ post.full_text }}<br>
-    {% set url_list = post.unshort_urls.split('|') %}
-    {% for url in url_list %}
-    <b>Urls: </b><a href="{{ url }}">{{ url }}</a><br>
-    {% endfor %}
+    <h3>{{ post.description }}</h3>
+    <b>Author: </b>{{ post.author }}<br>
+    <b>Source: </b><a href="{{ post.source }}">{{ post.source }}</a><br>
+    <b>Direct Link: </b><a href="{{ post.direct_link }}">{{ post.direct_link }}</a><br>
     <b>Date Created: </b> {{ post.date_created }}<br>
-    <!-- <b>Id: </b>{{ post.id }}<br> -->
-    <b>Tweet Type: </b>{{ post.tweet_type }}<br>
-    <b>Direct Link: </b><a href="{{ post.tweet_direct_link }}">{{ post.tweet_direct_link }}</a><br>
+    <b>Links: </b><br>
+    <a href="{{ post.url_1 }}">{{ post.url_1 }}</a><br>
+    {% if post.url_2 %}
+    <a href="{{ post.url_2 }}">{{ post.url_2 }}</a><br>
+    {% endif %}
+    {% if post.url_3 %}
+    <a href="{{ post.url_3 }}">{{ post.url_3 }}</a><br>
+    {% endif %}
+    {% if post.url_4 %}
+    <a href="{{ post.url_4 }}">{{ post.url_4 }}</a><br>
+    {% endif %}
+    {% if post.url_5 %}
+    <a href="{{ post.url_5 }}">{{ post.url_5 }}</a><br>
+    {% endif %}
+    {% if post.url_6 %}
+    <a href="{{ post.url_6 }}">{{ post.url_6 }}</a><br>
+    {% endif %}
 </p>
 <hr>
