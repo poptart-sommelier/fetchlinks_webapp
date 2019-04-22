@@ -28,18 +28,6 @@ class Posts(db.Model):
     urls_missing = db.Column(db.Boolean)
 
 
-class Twitter(db.Model):
-    idx = db.Column(db.Integer, primary_key=True)
-    last_accessed_id = db.Column(db.String(100))
-    time_created = db.Column(db.DateTime)
-
-
-class Urls(db.Model):
-    idx = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(4000))
-    unique_id = db.Column(db.String(100))
-
-
 def __repr__(self):
     return '<Posts {}>'.format(self.body)
 

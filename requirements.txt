@@ -1,0 +1,4 @@
+pip
+Flask
+flask_sqlalchemy
+pymysql

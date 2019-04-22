@@ -1,19 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.models import Posts, Urls
-
-
-# TODO: route for all posts, route filtered by user
-def fetch_urls(post):
-    url_list = []
-
-    all_unique_id_strings = post.unique_id_string.split(',')
-
-    for u_id in all_unique_id_strings:
-        url = Urls.query.filter_by(unique_id=u_id).first()
-        url_list.append(url.url)
-
-    post.urls = url_list
+from app.models import Posts
 
 
 @app.route('/')
