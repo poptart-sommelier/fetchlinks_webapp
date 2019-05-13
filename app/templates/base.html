@@ -5,16 +5,13 @@ table, th, td {
 }
 </style>
     <head>
-        {% if title %}
         <title>{{ title }}</title>
-        {% else %}
-        <title>DEFAULT TITLE</title>
-        {% endif %}
     </head>
     <body>
-        <div>
+        <p style="text-align:left;">
             <a href="{{ url_for('index') }}">Home</a>
-        </div>
+            <span style="float:right;">Last Update: {{ last_update }}</span>
+        </p>
         <hr>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
