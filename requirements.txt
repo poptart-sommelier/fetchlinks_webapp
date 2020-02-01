@@ -2,3 +2,4 @@ pip
 Flask
 flask_sqlalchemy
 pymysql
+flask-bootstrap
