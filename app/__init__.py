@@ -1,8 +1,6 @@
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
-# import MySQLdb
-import pymysql
 from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)

@@ -15,7 +15,7 @@ class Posts(db.Model):
     url_4 = db.Column(db.String(2200))
     url_5 = db.Column(db.String(2200))
     url_6 = db.Column(db.String(2200))
-    urls_missing = db.Column(db.Boolean)
+    urls_missing = db.Column(db.Integer)
 
     def __repr__(self):
         return '<Posts {}>'.format(self.body)
