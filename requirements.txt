@@ -1,5 +1,5 @@
 pip
 Flask
-flask_sqlalchemy
-pymysql
-flask-bootstrap
+Flask_SQLAlchemy
+Flask-Bootstrap
+python-dotenv
