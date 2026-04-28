@@ -14,8 +14,10 @@ describe("Home", () => {
     expect(markup).toContain('href="https://www.reddit.com/r/test"');
     expect(markup).toContain("Apr 28, 2026, 10:00 AM");
     expect(markup).toContain('aria-label="Post links"');
+    expect(markup).toContain('class="post-url-actions"');
     expect(markup).toContain("link 1");
     expect(markup).toContain("link 2");
+    expect(markup).toContain('class="post-source-action"');
     expect(markup).toContain("source");
     expect(markup).toContain('href="https://example.com/unshortened-b"');
     expect(markup).toContain('title="via short.example/b"');
@@ -43,6 +45,23 @@ describe("Home", () => {
     expect(markup).toContain(
       'href="/?source=reddit&amp;domain=example.com&amp;q=AI&amp;page=2"',
     );
+  });
+
+  it("renders a single extracted URL as link 1", () => {
+    const page = createPostPage();
+    const [post] = page.posts;
+    const markup = renderToStaticMarkup(
+      <LatestPostsView
+        result={createReadyResult({
+          page: createPostPage({
+            posts: [{ ...post, urls: [post.urls[0]], directLink: null }],
+          }),
+        })}
+      />,
+    );
+
+    expect(markup).toContain(">link 1</a>");
+    expect(markup).not.toContain(">link</a>");
   });
 
   it("renders an empty state when no posts exist", () => {
