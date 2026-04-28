@@ -6,6 +6,10 @@ This is the new Next.js TypeScript application scaffold for the Fetchlinks web U
 
 The scaffold targets Node 24.15 or newer with npm 11.12 or newer.
 
+## Environment
+
+Copy `.env.example` to `.env.local` for local development and set `FETCHLINKS_DB` to the absolute path of the SQLite database written by the fetchlinks ingestion app. The web app treats this database as read-only.
+
 ## Commands
 
 ```bash
