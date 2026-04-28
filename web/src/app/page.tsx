@@ -265,20 +265,24 @@ function PostListItem({ post }: { post: PostSummary }) {
       <h2>{post.description ?? "Untitled post"}</h2>
       {post.urls.length > 0 || post.directLink ? (
         <nav aria-label="Post links" className="post-links">
-          {post.urls.map((url, index) => (
-            <PostLinkAction key={url.id} showSeparator={index > 0}>
-              <PostUrlItem
-                label={post.urls.length === 1 ? "link" : `link ${index + 1}`}
-                url={url}
-              />
-            </PostLinkAction>
-          ))}
+          {post.urls.length > 0 ? (
+            <span className="post-url-actions">
+              {post.urls.map((url, index) => (
+                <PostLinkAction key={url.id} showSeparator={index > 0}>
+                  <PostUrlItem label={`link ${index + 1}`} url={url} />
+                </PostLinkAction>
+              ))}
+            </span>
+          ) : null}
           {post.directLink ? (
-            <PostLinkAction showSeparator={post.urls.length > 0}>
-              <a href={post.directLink} rel="noreferrer" target="_blank">
-                source
-              </a>
-            </PostLinkAction>
+            <a
+              className="post-source-action"
+              href={post.directLink}
+              rel="noreferrer"
+              target="_blank"
+            >
+              source
+            </a>
           ) : null}
         </nav>
       ) : null}

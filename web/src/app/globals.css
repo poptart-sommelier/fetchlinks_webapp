@@ -285,12 +285,21 @@ p {
 .post-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 6px;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid var(--subtle);
   color: var(--muted);
   font-size: 14px;
   line-height: 1.4;
+}
+
+.post-url-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  min-width: 0;
 }
 
 .post-link-action {
@@ -312,6 +321,10 @@ p {
 
 .post-links a:hover {
   color: var(--link-hover);
+}
+
+.post-source-action {
+  margin-left: auto;
 }
 
 .state {
