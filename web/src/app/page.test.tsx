@@ -1,14 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import type { PostPage } from "../models/read-models";
+import type { DomainSummary, PostPage, SourceSummary } from "../models/read-models";
 import { LatestPostsView, loadLatestPosts } from "./page";
 
 describe("Home", () => {
   it("renders posts with metadata, extracted URLs, and pagination links", () => {
-    const markup = renderToStaticMarkup(
-      <LatestPostsView result={{ status: "ready", page: createPostPage() }} />,
-    );
+    const markup = renderToStaticMarkup(<LatestPostsView result={createReadyResult()} />);
 
     expect(markup).toContain("Latest posts");
     expect(markup).toContain("Newest post");
@@ -21,19 +19,53 @@ describe("Home", () => {
     expect(markup).toContain('href="/?page=2"');
   });
 
+  it("renders filters and preserves them in pagination links", () => {
+    const markup = renderToStaticMarkup(
+      <LatestPostsView
+        result={createReadyResult({
+          filters: { source: "reddit", domain: "example.com", q: "AI" },
+          page: createPostPage({ totalPosts: 75 }),
+        })}
+      />,
+    );
+
+    expect(markup).toContain("75 matching posts");
+    expect(markup).toContain('name="q"');
+    expect(markup).toContain('value="AI"');
+    expect(markup).toContain("reddit (1)");
+    expect(markup).toContain("example.com (1)");
+    expect(markup).toContain('href="/"');
+    expect(markup).toContain(
+      'href="/?source=reddit&amp;domain=example.com&amp;q=AI&amp;page=2"',
+    );
+  });
+
   it("renders an empty state when no posts exist", () => {
     const markup = renderToStaticMarkup(
       <LatestPostsView
-        result={{
-          status: "ready",
+        result={createReadyResult({
           page: createPostPage({ posts: [], totalPosts: 0, totalPages: 0 }),
-        }}
+        })}
       />,
     );
 
     expect(markup).toContain("No posts");
     expect(markup).toContain("No posts have been collected yet.");
     expect(markup).toContain("Page 1 of 1");
+  });
+
+  it("renders a filtered empty state when filters have no matches", () => {
+    const markup = renderToStaticMarkup(
+      <LatestPostsView
+        result={createReadyResult({
+          filters: { q: "missing" },
+          page: createPostPage({ posts: [], totalPosts: 0, totalPages: 0 }),
+        })}
+      />,
+    );
+
+    expect(markup).toContain("0 matching posts");
+    expect(markup).toContain("No posts match the current filters.");
   });
 
   it("renders a safe error state when the database cannot be configured", () => {
@@ -46,6 +78,26 @@ describe("Home", () => {
     expect(markup).not.toContain("FETCHLINKS_DB is required");
   });
 });
+
+function createReadyResult({
+  domains = createDomainSummaries(),
+  filters = {},
+  page = createPostPage(),
+  sources = createSourceSummaries(),
+}: {
+  domains?: DomainSummary[];
+  filters?: { source?: string; domain?: string; q?: string };
+  page?: PostPage;
+  sources?: SourceSummary[];
+} = {}) {
+  return {
+    status: "ready" as const,
+    page,
+    sources,
+    domains,
+    filters,
+  };
+}
 
 function createPostPage(overrides: Partial<PostPage> = {}): PostPage {
   return {
@@ -88,4 +140,36 @@ function createPostPage(overrides: Partial<PostPage> = {}): PostPage {
     hasNextPage: true,
     ...overrides,
   };
+}
+
+function createSourceSummaries(): SourceSummary[] {
+  return [
+    {
+      source: "reddit",
+      postCount: 1,
+      latestPostDate: "2026-04-28T10:00:00Z",
+    },
+    {
+      source: "rss",
+      postCount: 50,
+      latestPostDate: "2026-04-27T10:00:00Z",
+    },
+  ];
+}
+
+function createDomainSummaries(): DomainSummary[] {
+  return [
+    {
+      domain: "example.com",
+      postCount: 1,
+      urlCount: 2,
+      latestPostDate: "2026-04-28T10:00:00Z",
+    },
+    {
+      domain: "docs.example.org",
+      postCount: 12,
+      urlCount: 12,
+      latestPostDate: "2026-04-27T10:00:00Z",
+    },
+  ];
 }
