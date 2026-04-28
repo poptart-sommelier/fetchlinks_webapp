@@ -21,6 +21,19 @@ npm run lint
 npm run typecheck
 npm run test
 npm run build
+npm run validate
+npm run validate:production
 ```
 
 The development server listens on http://localhost:3000 by default.
+
+`npm run validate` runs lint, typecheck, tests, and the production build in order.
+
+`npm run validate:production` runs the same validation sequence, then starts `npm run start` on a local ephemeral port with a temporary SQLite fixture database and fetches the rendered home page.
+
+To check production mode manually against a real database:
+
+```bash
+FETCHLINKS_DB=/absolute/path/to/fetchlinks.db npm run build
+FETCHLINKS_DB=/absolute/path/to/fetchlinks.db npm run start -- --hostname 127.0.0.1 --port 3000
+```
