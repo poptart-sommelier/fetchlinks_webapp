@@ -5,8 +5,10 @@ import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 
 import {
+  getDomainSummaries,
   getPosts,
   getPostCount,
+  getSourceSummaries,
   openConfiguredFetchlinksDatabase,
   openFetchlinksDatabase,
   withFetchlinksDatabase,
@@ -170,6 +172,75 @@ describe("getPosts", () => {
     }
   });
 
+  it("filters posts by source", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      const page = getPosts(database, { source: "rss", page: 1, pageSize: 10 });
+
+      expect(page).toMatchObject({ totalPosts: 2, totalPages: 1 });
+      expect(page.posts.map((post) => post.uniqueId)).toEqual(["rss-4", "rss-1"]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
+  it("filters posts by extracted URL domain using normalized hrefs", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      const page = getPosts(database, {
+        domain: "EXAMPLE.com",
+        page: 1,
+        pageSize: 10,
+      });
+
+      expect(page).toMatchObject({ totalPosts: 2, totalPages: 1 });
+      expect(page.posts.map((post) => post.uniqueId)).toEqual(["reddit-2", "rss-1"]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
+  it("searches post fields and extracted URLs", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      const urlMatch = getPosts(database, { q: "unshortened-B" });
+      const authorMatch = getPosts(database, { q: "linus" });
+
+      expect(urlMatch.posts.map((post) => post.uniqueId)).toEqual(["reddit-2"]);
+      expect(authorMatch.posts.map((post) => post.uniqueId)).toEqual(["rss-4"]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
+  it("combines source, domain, and search filters", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      const page = getPosts(database, {
+        source: "rss",
+        domain: "docs.example.org",
+        q: "tie-break",
+      });
+
+      expect(page.posts.map((post) => post.uniqueId)).toEqual(["rss-4"]);
+      expect(page.totalPosts).toBe(1);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
   it("rejects invalid pagination options", () => {
     const fixture = createPostsQueryFixture();
     const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
@@ -181,6 +252,111 @@ describe("getPosts", () => {
       expect(() => getPosts(database, { pageSize: 1.5 })).toThrowError(
         /pageSize must be a positive integer/,
       );
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+});
+
+describe("getSourceSummaries", () => {
+  it("returns source counts ordered by popularity and name", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      expect(getSourceSummaries(database)).toEqual([
+        {
+          source: "rss",
+          postCount: 2,
+          latestPostDate: "2026-04-26T10:00:00Z",
+        },
+        {
+          source: "mastodon",
+          postCount: 1,
+          latestPostDate: "2026-04-26T10:00:00Z",
+        },
+        {
+          source: "reddit",
+          postCount: 1,
+          latestPostDate: "2026-04-28T10:00:00Z",
+        },
+      ]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
+  it("can summarize sources after domain and search filters", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      expect(getSourceSummaries(database, { domain: "example.com", q: "post" })).toEqual([
+        {
+          source: "reddit",
+          postCount: 1,
+          latestPostDate: "2026-04-28T10:00:00Z",
+        },
+        {
+          source: "rss",
+          postCount: 1,
+          latestPostDate: "2026-04-25T10:00:00Z",
+        },
+      ]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+});
+
+describe("getDomainSummaries", () => {
+  it("returns URL domain counts from normalized hrefs", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      expect(getDomainSummaries(database)).toEqual([
+        {
+          domain: "example.com",
+          postCount: 2,
+          urlCount: 3,
+          latestPostDate: "2026-04-28T10:00:00Z",
+        },
+        {
+          domain: "docs.example.org",
+          postCount: 1,
+          urlCount: 1,
+          latestPostDate: "2026-04-26T10:00:00Z",
+        },
+      ]);
+    } finally {
+      database.close();
+      fixture.cleanup();
+    }
+  });
+
+  it("can summarize domains after source and search filters", () => {
+    const fixture = createPostsQueryFixture();
+    const database = openFetchlinksDatabase({ fetchlinksDbPath: fixture.dbPath });
+
+    try {
+      expect(getDomainSummaries(database, { source: "rss", q: "post" })).toEqual([
+        {
+          domain: "docs.example.org",
+          postCount: 1,
+          urlCount: 1,
+          latestPostDate: "2026-04-26T10:00:00Z",
+        },
+        {
+          domain: "example.com",
+          postCount: 1,
+          urlCount: 1,
+          latestPostDate: "2026-04-25T10:00:00Z",
+        },
+      ]);
     } finally {
       database.close();
       fixture.cleanup();
@@ -282,7 +458,7 @@ function createPostsQueryFixture(): Fixture {
       (1, 1, 0, 'https://short.example/a', 'hash-a', 'https://example.com/a'),
       (2, 2, 1, 'https://short.example/b', 'hash-b1', 'https://example.com/unshortened-b'),
       (3, 2, 0, 'https://example.com/direct-b', 'hash-b0', NULL),
-      (4, 4, 0, 'https://example.com/d', 'hash-d', NULL);
+      (4, 4, 0, 'https://docs.example.org/d', 'hash-d', NULL);
   `);
 }
 

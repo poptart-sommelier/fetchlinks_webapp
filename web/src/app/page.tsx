@@ -1,5 +1,19 @@
-import type { PostPage, PostSummary, PostUrl } from "../models/read-models";
-import { getPosts, openConfiguredFetchlinksDatabase } from "../server/db";
+import Link from "next/link";
+
+import type {
+  DomainSummary,
+  PostPage,
+  PostSummary,
+  PostUrl,
+  SourceSummary,
+} from "../models/read-models";
+import {
+  getDomainSummaries,
+  getPosts,
+  getSourceSummaries,
+  openConfiguredFetchlinksDatabase,
+  type PostFilters,
+} from "../server/db";
 
 type PageSearchParams = Record<string, string | string[] | undefined>;
 
@@ -9,10 +23,19 @@ type HomeProps = {
 
 type Env = Partial<Record<string, string | undefined>>;
 
+type ActiveFilters = {
+  source?: string;
+  domain?: string;
+  q?: string;
+};
+
 type LatestPostsResult =
   | {
       status: "ready";
       page: PostPage;
+      sources: SourceSummary[];
+      domains: DomainSummary[];
+      filters: ActiveFilters;
     }
   | {
       status: "error";
@@ -31,24 +54,42 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: HomeProps = {}) {
   const resolvedSearchParams = await searchParams;
   const page = getPageFromSearchParams(resolvedSearchParams);
+  const filters = getFiltersFromSearchParams(resolvedSearchParams);
 
-  return <LatestPostsView result={loadLatestPosts({ page })} />;
+  return <LatestPostsView result={loadLatestPosts({ page, filters })} />;
 }
 
 export function loadLatestPosts({
   env = process.env,
+  filters = {},
   page = 1,
 }: {
   env?: Env;
+  filters?: PostFilters;
   page?: number;
 } = {}): LatestPostsResult {
+  const activeFilters = normalizeFilters(filters);
+
   try {
     const database = openConfiguredFetchlinksDatabase(env);
 
     try {
       return {
         status: "ready",
-        page: getPosts(database, { page, pageSize: POSTS_PER_PAGE }),
+        page: getPosts(database, {
+          ...activeFilters,
+          page,
+          pageSize: POSTS_PER_PAGE,
+        }),
+        sources: getSourceSummaries(database, {
+          domain: activeFilters.domain,
+          q: activeFilters.q,
+        }),
+        domains: getDomainSummaries(database, {
+          source: activeFilters.source,
+          q: activeFilters.q,
+        }),
+        filters: activeFilters,
       };
     } finally {
       if (database.isOpen) {
@@ -77,8 +118,15 @@ export function LatestPostsView({ result }: { result: LatestPostsResult }) {
 
   return (
     <main className="shell">
-      <PageHeader page={page} />
-      {page.posts.length === 0 ? <EmptyPostsState page={page} /> : null}
+      <PageHeader filters={result.filters} page={page} />
+      <FilterBar
+        domains={result.domains}
+        filters={result.filters}
+        sources={result.sources}
+      />
+      {page.posts.length === 0 ? (
+        <EmptyPostsState filters={result.filters} page={page} />
+      ) : null}
       {page.posts.length > 0 ? (
         <section className="post-list" aria-label="Latest posts">
           {page.posts.map((post) => (
@@ -86,12 +134,22 @@ export function LatestPostsView({ result }: { result: LatestPostsResult }) {
           ))}
         </section>
       ) : null}
-      <Pagination page={page} />
+      <Pagination filters={result.filters} page={page} />
     </main>
   );
 }
 
-function PageHeader({ page }: { page?: PostPage }) {
+function PageHeader({
+  filters = {},
+  page,
+}: {
+  filters?: ActiveFilters;
+  page?: PostPage;
+}) {
+  const summaryLabel = hasActiveFilters(filters)
+    ? "matching posts"
+    : "posts collected";
+
   return (
     <header className="page-header">
       <p className="eyebrow">Fetchlinks</p>
@@ -99,7 +157,7 @@ function PageHeader({ page }: { page?: PostPage }) {
         <h1>Latest posts</h1>
         {page ? (
           <p className="page-summary">
-            {page.totalPosts.toLocaleString("en-US")} posts collected
+            {page.totalPosts.toLocaleString("en-US")} {summaryLabel}
           </p>
         ) : null}
       </div>
@@ -107,9 +165,66 @@ function PageHeader({ page }: { page?: PostPage }) {
   );
 }
 
-function EmptyPostsState({ page }: { page: PostPage }) {
+function FilterBar({
+  domains,
+  filters,
+  sources,
+}: {
+  domains: DomainSummary[];
+  filters: ActiveFilters;
+  sources: SourceSummary[];
+}) {
+  const sourceOptions = includeActiveSource(sources, filters.source);
+  const domainOptions = includeActiveDomain(domains, filters.domain);
+
+  return (
+    <form action="/" className="filter-bar" method="get">
+      <label>
+        <span>Search</span>
+        <input
+          defaultValue={filters.q ?? ""}
+          name="q"
+          placeholder="Description, author, URL"
+          type="search"
+        />
+      </label>
+      <label>
+        <span>Source</span>
+        <select defaultValue={filters.source ?? ""} name="source">
+          <option value="">Any source</option>
+          {sourceOptions.map((source) => (
+            <option key={source.source} value={source.source}>
+              {source.source} ({source.postCount.toLocaleString("en-US")})
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Domain</span>
+        <select defaultValue={filters.domain ?? ""} name="domain">
+          <option value="">Any domain</option>
+          {domainOptions.map((domain) => (
+            <option key={domain.domain} value={domain.domain}>
+              {domain.domain} ({domain.postCount.toLocaleString("en-US")})
+            </option>
+          ))}
+        </select>
+      </label>
+      <button type="submit">Apply</button>
+      {hasActiveFilters(filters) ? (
+        <Link className="clear-filters" href="/">
+          Clear
+        </Link>
+      ) : null}
+    </form>
+  );
+}
+
+function EmptyPostsState({ filters, page }: { filters: ActiveFilters; page: PostPage }) {
   const message =
-    page.totalPosts === 0
+    page.totalPosts === 0 && hasActiveFilters(filters)
+      ? "No posts match the current filters."
+      : page.totalPosts === 0
       ? "No posts have been collected yet."
       : "No posts were found on this page.";
 
@@ -163,13 +278,13 @@ function PostUrlItem({ url }: { url: PostUrl }) {
   );
 }
 
-function Pagination({ page }: { page: PostPage }) {
+function Pagination({ filters, page }: { filters: ActiveFilters; page: PostPage }) {
   const totalPages = Math.max(page.totalPages, 1);
 
   return (
     <nav className="pagination" aria-label="Posts pagination">
       {page.hasPreviousPage ? (
-        <a href={buildPageHref(page.page - 1)}>Previous</a>
+        <Link href={buildPageHref(page.page - 1, filters)}>Previous</Link>
       ) : (
         <span aria-disabled="true">Previous</span>
       )}
@@ -177,7 +292,7 @@ function Pagination({ page }: { page: PostPage }) {
         Page {page.page.toLocaleString("en-US")} of {totalPages.toLocaleString("en-US")}
       </span>
       {page.hasNextPage ? (
-        <a href={buildPageHref(page.page + 1)}>Next</a>
+        <Link href={buildPageHref(page.page + 1, filters)}>Next</Link>
       ) : (
         <span aria-disabled="true">Next</span>
       )}
@@ -185,9 +300,18 @@ function Pagination({ page }: { page: PostPage }) {
   );
 }
 
+function getFiltersFromSearchParams(
+  searchParams: PageSearchParams | undefined,
+): ActiveFilters {
+  return normalizeFilters({
+    source: getSingleSearchParam(searchParams, "source"),
+    domain: getSingleSearchParam(searchParams, "domain"),
+    q: getSingleSearchParam(searchParams, "q"),
+  });
+}
+
 function getPageFromSearchParams(searchParams: PageSearchParams | undefined) {
-  const value = searchParams?.page;
-  const page = Array.isArray(value) ? value[0] : value;
+  const page = getSingleSearchParam(searchParams, "page");
 
   if (!page) {
     return 1;
@@ -198,8 +322,37 @@ function getPageFromSearchParams(searchParams: PageSearchParams | undefined) {
   return Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 }
 
-function buildPageHref(page: number) {
-  return page === 1 ? "/" : `/?page=${page}`;
+function getSingleSearchParam(
+  searchParams: PageSearchParams | undefined,
+  name: string,
+) {
+  const value = searchParams?.[name];
+
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function buildPageHref(page: number, filters: ActiveFilters) {
+  const params = new URLSearchParams();
+
+  if (filters.source) {
+    params.set("source", filters.source);
+  }
+
+  if (filters.domain) {
+    params.set("domain", filters.domain);
+  }
+
+  if (filters.q) {
+    params.set("q", filters.q);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+
+  return query ? `/?${query}` : "/";
 }
 
 function formatPostDate(value: string) {
@@ -216,4 +369,47 @@ function formatUrlLabel(value: string) {
   } catch {
     return value;
   }
+}
+
+function normalizeFilters(filters: PostFilters): ActiveFilters {
+  const source = normalizeOptionalText(filters.source);
+  const domain = normalizeOptionalText(filters.domain)?.toLowerCase();
+  const q = normalizeOptionalText(filters.q);
+
+  return { source, domain, q };
+}
+
+function normalizeOptionalText(value: string | undefined): string | undefined {
+  const text = value?.trim();
+
+  return text ? text : undefined;
+}
+
+function hasActiveFilters(filters: ActiveFilters) {
+  return Boolean(filters.source || filters.domain || filters.q);
+}
+
+function includeActiveSource(
+  sources: SourceSummary[],
+  activeSource: string | undefined,
+): SourceSummary[] {
+  if (!activeSource || sources.some((source) => source.source === activeSource)) {
+    return sources;
+  }
+
+  return [{ source: activeSource, postCount: 0, latestPostDate: null }, ...sources];
+}
+
+function includeActiveDomain(
+  domains: DomainSummary[],
+  activeDomain: string | undefined,
+): DomainSummary[] {
+  if (!activeDomain || domains.some((domain) => domain.domain === activeDomain)) {
+    return domains;
+  }
+
+  return [
+    { domain: activeDomain, postCount: 0, urlCount: 0, latestPostDate: null },
+    ...domains,
+  ];
 }

@@ -87,6 +87,75 @@ p {
   margin-top: 6px;
 }
 
+.filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.filter-bar label {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.filter-bar label span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.filter-bar input,
+.filter-bar select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--foreground);
+  font: inherit;
+}
+
+.filter-bar input {
+  padding: 0 10px;
+}
+
+.filter-bar select {
+  padding: 0 8px;
+}
+
+.filter-bar button,
+.clear-filters {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.filter-bar button {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.clear-filters {
+  border: 1px solid var(--border);
+  background: var(--subtle);
+  color: var(--muted);
+}
+
 .post-list {
   display: grid;
   gap: 16px;
@@ -221,6 +290,10 @@ p {
 
   h1 {
     font-size: 28px;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
   }
 
   .pagination {
