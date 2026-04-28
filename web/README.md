@@ -37,3 +37,5 @@ To check production mode manually against a real database:
 FETCHLINKS_DB=/absolute/path/to/fetchlinks.db npm run build
 FETCHLINKS_DB=/absolute/path/to/fetchlinks.db npm run start -- --hostname 127.0.0.1 --port 3000
 ```
+
+VM deployment examples for systemd and nginx are documented in the repository root README.
