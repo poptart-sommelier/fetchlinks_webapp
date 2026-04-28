@@ -152,15 +152,19 @@ function PageHeader({
 
   return (
     <header className="page-header">
-      <p className="eyebrow">Fetchlinks</p>
-      <div>
+      <div className="page-title">
+        <p className="eyebrow">Fetchlinks</p>
         <h1>Latest posts</h1>
-        {page ? (
-          <p className="page-summary">
-            {page.totalPosts.toLocaleString("en-US")} {summaryLabel}
-          </p>
-        ) : null}
       </div>
+      {page ? (
+        <p
+          aria-label={`${page.totalPosts.toLocaleString("en-US")} ${summaryLabel}`}
+          className="page-summary"
+        >
+          <strong>{page.totalPosts.toLocaleString("en-US")}</strong>{" "}
+          <span>{summaryLabel}</span>
+        </p>
+      ) : null}
     </header>
   );
 }
@@ -178,7 +182,7 @@ function FilterBar({
   const domainOptions = includeActiveDomain(domains, filters.domain);
 
   return (
-    <form action="/" className="filter-bar" method="get">
+    <form action="/" aria-label="Filter posts" className="filter-bar" method="get">
       <label>
         <span>Search</span>
         <input
@@ -210,12 +214,14 @@ function FilterBar({
           ))}
         </select>
       </label>
-      <button type="submit">Apply</button>
-      {hasActiveFilters(filters) ? (
-        <Link className="clear-filters" href="/">
-          Clear
-        </Link>
-      ) : null}
+      <div className="filter-actions">
+        <button type="submit">Apply</button>
+        {hasActiveFilters(filters) ? (
+          <Link className="clear-filters" href="/">
+            Clear
+          </Link>
+        ) : null}
+      </div>
     </form>
   );
 }
@@ -239,21 +245,28 @@ function EmptyPostsState({ filters, page }: { filters: ActiveFilters; page: Post
 function PostListItem({ post }: { post: PostSummary }) {
   return (
     <article className="post-item">
-      <div className="post-meta">
-        <span>{post.source}</span>
-        {post.author ? <span>{post.author}</span> : null}
-        <time dateTime={post.dateCreated}>{formatPostDate(post.dateCreated)}</time>
-      </div>
-      <h2>{post.description ?? "Untitled post"}</h2>
-      <div className="post-actions">
+      <header className="post-heading">
+        <div className="post-meta">
+          <span className="post-source" title={post.source}>
+            {formatUrlLabel(post.source)}
+          </span>
+          {post.author ? <span>{post.author}</span> : null}
+          <time dateTime={post.dateCreated}>{formatPostDate(post.dateCreated)}</time>
+        </div>
         {post.directLink ? (
-          <a href={post.directLink} rel="noreferrer" target="_blank">
+          <a
+            className="source-link"
+            href={post.directLink}
+            rel="noreferrer"
+            target="_blank"
+          >
             Source post
           </a>
         ) : null}
-      </div>
+      </header>
+      <h2>{post.description ?? "Untitled post"}</h2>
       {post.urls.length > 0 ? (
-        <ul className="url-list">
+        <ul aria-label="Extracted URLs" className="url-list">
           {post.urls.map((url) => (
             <PostUrlItem key={url.id} url={url} />
           ))}

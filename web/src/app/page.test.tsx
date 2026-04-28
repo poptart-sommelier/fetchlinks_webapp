@@ -29,8 +29,9 @@ describe("Home", () => {
       />,
     );
 
-    expect(markup).toContain("75 matching posts");
+    expect(markup).toContain('aria-label="75 matching posts"');
     expect(markup).toContain('name="q"');
+    expect(markup).toContain('aria-label="Filter posts"');
     expect(markup).toContain('value="AI"');
     expect(markup).toContain("reddit (1)");
     expect(markup).toContain("example.com (1)");
@@ -64,7 +65,7 @@ describe("Home", () => {
       />,
     );
 
-    expect(markup).toContain("0 matching posts");
+    expect(markup).toContain('aria-label="0 matching posts"');
     expect(markup).toContain("No posts match the current filters.");
   });
 
