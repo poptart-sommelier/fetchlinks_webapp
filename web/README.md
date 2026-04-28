@@ -4,7 +4,7 @@ This is the new Next.js TypeScript application scaffold for the Fetchlinks web U
 
 ## Runtime
 
-The scaffold targets Node 18.18 or newer, including the Node 18 package available on Ubuntu 24.04.
+The scaffold targets Node 24.15 or newer with npm 11.12 or newer.
 
 ## Commands
 
@@ -12,6 +12,8 @@ The scaffold targets Node 18.18 or newer, including the Node 18 package availabl
 npm install
 npm run dev
 npm run lint
+npm run typecheck
+npm run test
 npm run build
 ```
 
