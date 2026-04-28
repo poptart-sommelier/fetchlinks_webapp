@@ -2,6 +2,8 @@
 
 This document captures the current `fetchlinks_webapp` Flask implementation before the Next.js migration. It is intentionally descriptive: no behavior is changed in this step.
 
+Status: the Flask implementation has since been removed. This document remains as the reference for old routes, templates, model assumptions, and behavior to preserve in the Next.js rewrite.
+
 ## Current Entry Points
 
 - `fetchlinks_webapp.py` imports the Flask app, SQLAlchemy handle, and shell context models.

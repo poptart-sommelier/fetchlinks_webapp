@@ -6,17 +6,16 @@ This document records the Step 3 layout decision for the Next.js migration. It d
 
 Build the new Next.js application under a new `web/` directory at the repository root.
 
-Proposed future shape:
+Update: the legacy Flask app was removed after its behavior was captured in `flask_baseline.md`. The active app now lives in `web/`.
+
+Current shape:
 
 ```text
 fetchlinks_webapp/
-  app/                         # existing Flask app, kept during migration
-  config.py                    # existing Flask config, kept during migration
-  fetchlinks_webapp.py          # existing Flask entry point, kept during migration
-  requirements.txt             # existing Flask dependencies, kept during migration
   flask_baseline.md            # current Flask baseline notes
   nextjs_layout.md             # this decision record
-  web/                         # new Next.js app, added in the next step
+  README.md
+  web/                         # active Next.js app
     package.json
     src/
     ...
@@ -24,10 +23,10 @@ fetchlinks_webapp/
 
 ## Why `web/`
 
-- Keeps the current Flask app runnable while the Next.js app is built.
+- Kept the Flask app runnable during the early migration.
 - Avoids mixing Python package files and Node/Next.js project files at the root during early migration.
-- Makes side-by-side validation straightforward: Flask can keep running while `web/` runs on another port.
-- Lets us remove or archive Flask later, after the Next.js app reaches feature parity.
+- Made side-by-side validation straightforward while Flask still existed.
+- Let us remove Flask later without moving the Next.js project.
 - Keeps rollback simple because Step 4 and later changes are isolated under `web/` unless a root-level deployment or documentation file is intentionally changed.
 
 ## Alternatives Considered
@@ -41,9 +40,9 @@ Pros:
 
 Cons:
 
-- Immediately mixes Next.js files with Flask files.
+- Would have immediately mixed Next.js files with Flask files.
 - Makes the early migration harder to review.
-- Raises the chance of disrupting the working Flask app before the replacement is validated.
+- Would have raised the chance of disrupting the working Flask app before the replacement was validated.
 
 ### Move Flask To `legacy-flask/` Before Scaffolding
 
@@ -58,14 +57,9 @@ Cons:
 - Adds risk to an otherwise documentation/scaffold phase.
 - Makes side-by-side validation slightly more awkward.
 
-## Future Cleanup Direction
+## Flask Cleanup
 
-After the Next.js app is validated, choose one of these cleanup paths:
-
-1. Move Flask files into `legacy-flask/` for a short archival period.
-2. Remove Flask files entirely once the replacement is accepted.
-
-That decision belongs to the later retire/archive step, not this layout step.
+The Flask files were removed once the project no longer needed side-by-side execution. The baseline document remains because it records the old routes and user-facing behavior needed for the rewrite.
 
 ## Testing Impact
 

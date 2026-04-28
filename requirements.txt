@@ -1,5 +1,0 @@
-pip
-Flask
-Flask_SQLAlchemy
-Flask-Bootstrap
-python-dotenv

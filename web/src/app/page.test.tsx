@@ -9,5 +9,6 @@ describe("Home", () => {
 
     expect(markup).toContain("Fetchlinks Web");
     expect(markup).toContain("Next.js scaffold is ready.");
+    expect(markup).toContain("active Fetchlinks web UI");
   });
 });

@@ -1,6 +1,6 @@
 # Fetchlinks Web
 
-This is the new Next.js TypeScript application scaffold for the Fetchlinks web UI. It lives beside the existing Flask app while the replacement is built and validated one step at a time.
+This is the Next.js TypeScript application for the Fetchlinks web UI. It replaces the previous Flask implementation, whose baseline behavior is documented at the repository root.
 
 ## Runtime
 
