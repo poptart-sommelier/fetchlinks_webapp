@@ -10,12 +10,16 @@ describe("Home", () => {
 
     expect(markup).toContain("Latest posts");
     expect(markup).toContain("Newest post");
-    expect(markup).toContain("reddit");
     expect(markup).toContain("Grace");
+    expect(markup).toContain('href="https://www.reddit.com/r/test"');
     expect(markup).toContain("Apr 28, 2026, 10:00 AM");
-    expect(markup).toContain("Source post");
-    expect(markup).toContain("example.com/unshortened-b");
-    expect(markup).toContain("via short.example/b");
+    expect(markup).toContain('aria-label="Post links"');
+    expect(markup).toContain("link 1");
+    expect(markup).toContain("link 2");
+    expect(markup).toContain("source");
+    expect(markup).toContain('href="https://example.com/unshortened-b"');
+    expect(markup).toContain('title="via short.example/b"');
+    expect(markup).not.toContain("Source post");
     expect(markup).toContain('href="/?page=2"');
   });
 
@@ -105,7 +109,7 @@ function createPostPage(overrides: Partial<PostPage> = {}): PostPage {
     posts: [
       {
         id: 2,
-        source: "reddit",
+        source: "https://www.reddit.com/r/test",
         author: "Grace",
         description: "Newest post",
         directLink: "https://example.com/source-post",
