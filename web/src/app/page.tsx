@@ -6,7 +6,7 @@ export default function Home() {
         <h1>Next.js scaffold is ready.</h1>
         <p>
           This placeholder confirms the new TypeScript App Router application is
-          running beside the existing Flask app. Database-backed link browsing
+          running as the active Fetchlinks web UI. Database-backed link browsing
           will be added in later steps.
         </p>
       </section>
