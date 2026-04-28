@@ -247,47 +247,72 @@ function PostListItem({ post }: { post: PostSummary }) {
     <article className="post-item">
       <header className="post-heading">
         <div className="post-meta">
-          <span className="post-source" title={post.source}>
-            {formatUrlLabel(post.source)}
-          </span>
-          {post.author ? <span>{post.author}</span> : null}
-          <time dateTime={post.dateCreated}>{formatPostDate(post.dateCreated)}</time>
-        </div>
-        {post.directLink ? (
           <a
-            className="source-link"
-            href={post.directLink}
+            className="post-source"
+            href={toExternalHref(post.source)}
             rel="noreferrer"
             target="_blank"
+            title={post.source}
           >
-            Source post
+            {getSourceLabel(post)}
           </a>
-        ) : null}
+          <span aria-hidden="true" className="post-meta-separator">
+            /
+          </span>
+          <time dateTime={post.dateCreated}>{formatPostDate(post.dateCreated)}</time>
+        </div>
       </header>
       <h2>{post.description ?? "Untitled post"}</h2>
-      {post.urls.length > 0 ? (
-        <ul aria-label="Extracted URLs" className="url-list">
-          {post.urls.map((url) => (
-            <PostUrlItem key={url.id} url={url} />
+      {post.urls.length > 0 || post.directLink ? (
+        <nav aria-label="Post links" className="post-links">
+          {post.urls.map((url, index) => (
+            <PostLinkAction key={url.id} showSeparator={index > 0}>
+              <PostUrlItem
+                label={post.urls.length === 1 ? "link" : `link ${index + 1}`}
+                url={url}
+              />
+            </PostLinkAction>
           ))}
-        </ul>
+          {post.directLink ? (
+            <PostLinkAction showSeparator={post.urls.length > 0}>
+              <a href={post.directLink} rel="noreferrer" target="_blank">
+                source
+              </a>
+            </PostLinkAction>
+          ) : null}
+        </nav>
       ) : null}
     </article>
   );
 }
 
-function PostUrlItem({ url }: { url: PostUrl }) {
+function PostLinkAction({
+  children,
+  showSeparator,
+}: {
+  children: React.ReactNode;
+  showSeparator: boolean;
+}) {
+  return (
+    <span className="post-link-action">
+      {showSeparator ? <span className="post-link-separator">,</span> : null}
+      {children}
+    </span>
+  );
+}
+
+function PostUrlItem({ label, url }: { label: string; url: PostUrl }) {
   const usesUnshortenedUrl = url.href !== url.originalUrl;
 
   return (
-    <li>
-      <a href={url.href} rel="noreferrer" target="_blank">
-        {formatUrlLabel(url.href)}
-      </a>
-      {usesUnshortenedUrl ? (
-        <span className="url-original">via {formatUrlLabel(url.originalUrl)}</span>
-      ) : null}
-    </li>
+    <a
+      href={url.href}
+      rel="noreferrer"
+      target="_blank"
+      title={usesUnshortenedUrl ? `via ${formatUrlLabel(url.originalUrl)}` : url.href}
+    >
+      {label}
+    </a>
   );
 }
 
@@ -381,6 +406,18 @@ function formatUrlLabel(value: string) {
     return `${url.hostname}${url.pathname}${url.search}`;
   } catch {
     return value;
+  }
+}
+
+function getSourceLabel(post: PostSummary) {
+  return post.author?.trim() || formatUrlLabel(post.source);
+}
+
+function toExternalHref(value: string) {
+  try {
+    return new URL(value).toString();
+  } catch {
+    return `https://${value}`;
   }
 }
 

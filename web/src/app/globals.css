@@ -242,10 +242,8 @@ p {
   line-height: 1.4;
 }
 
-.post-meta span:not(:last-child)::after {
-  margin-left: 10px;
+.post-meta-separator {
   color: var(--border);
-  content: "/";
 }
 
 .post-source {
@@ -253,9 +251,16 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--accent-strong);
+  font-weight: 700;
 }
 
-.source-link,
+.post-source:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .pagination a {
   display: inline-flex;
   min-height: 32px;
@@ -268,12 +273,6 @@ p {
   font-weight: 700;
 }
 
-.source-link {
-  flex: 0 0 auto;
-  padding: 0 12px;
-}
-
-.source-link:hover,
 .pagination a:hover {
   background: var(--accent);
   color: #ffffff;
@@ -283,21 +282,27 @@ p {
   max-width: 82ch;
 }
 
-.url-list {
-  display: grid;
-  gap: 6px;
+.post-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
   padding-top: 8px;
   border-top: 1px solid var(--subtle);
-  overflow-wrap: anywhere;
-  list-style: none;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.url-list li {
-  display: grid;
-  gap: 2px;
+.post-link-action {
+  display: inline-flex;
+  gap: 6px;
 }
 
-.url-list a {
+.post-link-separator {
+  color: var(--muted);
+}
+
+.post-links a {
   color: var(--link);
   font-weight: 700;
   text-decoration: underline;
@@ -305,15 +310,8 @@ p {
   text-underline-offset: 3px;
 }
 
-.url-list a:hover {
+.post-links a:hover {
   color: var(--link-hover);
-}
-
-.url-original {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .state {
@@ -400,10 +398,6 @@ p {
 
   .post-heading {
     display: grid;
-  }
-
-  .source-link {
-    justify-self: start;
   }
 
   .post-source {
